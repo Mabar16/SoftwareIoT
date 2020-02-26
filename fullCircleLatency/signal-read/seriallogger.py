@@ -6,6 +6,6 @@ file_object = open('log.csv', 'a')
 ser = serial.Serial('COM7', 115200)
 while True:
     line = str(ser.readline())
-    file_object.write(line+","+str(time.time())+"\n")
+    file_object.write(str(str(time.time())+","+line+","+str(time.time())+"\n")
 # Close the file
 file_object.close()
