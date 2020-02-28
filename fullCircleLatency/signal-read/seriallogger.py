@@ -1,13 +1,15 @@
 from __future__ import absolute_import
 import serial
 import time
-file_object = open('log.csv', 'a')
+with open('log.csv', 'a') as file_object:
+    file_object.write("msg,before,after\n")
+    print("hell")
+    ser = serial.Serial('COM7', 115200,timeout=2)
+    while True:
+        timeBefore=time.time()
+        line = str(ser.readline())
+        timeAfter=time.time()
+        if(line != None and line != ""):
+            file_object.write((line+"," +str(timeBefore)+","+str(timeAfter)+"\n"))
 
-ser = serial.Serial('COM7', 115200)
-while True:
-    timeBefore=time.time()
-    line = str(ser.readline())
-    timeAfter=time.time()
-    file_object.write(str(str(timeBefore)+","+line+","+str(timeAfter)+"\n")
-# Close the file
-file_object.close()
+
