@@ -4,7 +4,8 @@ import time
 with open('log.csv', 'a') as file_object:
     file_object.write("msg,before,after\n")
     print("hell")
-    ser = serial.Serial('COM5', 115200,timeout=2)
+    address = '/dev/tty.usbmodemPy51881e1'
+    ser = serial.Serial(address, 115200,timeout=2)
     while True:
         timeBefore=time.time_ns()
         line = str(ser.readline())

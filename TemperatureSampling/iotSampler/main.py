@@ -14,10 +14,11 @@ apin = adc.channel(pin='P16')   # create an analog pin on P16
 
 while True:
     val = apin()                    # read an analog value
-    pycom.rgbled(0x550000)  # Red
-    time.sleep(1)
-    pycom.rgbled(0x005500)  # Green
-    time.sleep(1)
-    pycom.rgbled(0x000055)  # Blue
-    time.sleep(1)
+    pycom.rgbled(0x556633)  # Red
     print(val)
+    time.sleep(1)
+    #pycom.rgbled(0x005500)  # Green
+    #time.sleep(1)
+    #pycom.rgbled(0x000055)  # Blue
+    #time.sleep(1)
+    
