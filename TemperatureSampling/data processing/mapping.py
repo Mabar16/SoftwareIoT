@@ -32,7 +32,7 @@ with open('log.csv') as csv_file:
                 maxTemp = temp_degrees
     
     time_bucket_size = 1
-    temp_bucket_size = 1
+    temp_bucket_size = 5
     number_of_buckets = (maxTime-minTime)/time_bucket_size
     number_of_buckets_temp = (maxTemp-minTemp)/temp_bucket_size
     tempBuckets = [0] * math.ceil(number_of_buckets_temp)
@@ -62,25 +62,26 @@ with open('log.csv') as csv_file:
 
     #print(timeBuckets)
 
-def groundTrueTemp(somethingthatisnotkeyword):
-    if(somethingthatisnotkeyword == 0 ): return 69
-    return 114.992 * (somethingthatisnotkeyword ** (-0.3055))
+def groundTrueTemp(time):
+    if(math.isnan(time)): return float('NaN')
+    if(time == 0): return 69
+    return max(26,min(60,114.992 * (time ** (-0.3055))))
 
 rowTempStatistics = {}
 rowTimeStatistics = {}
 
 for row in range(0,len(timeBuckets[0])):
-    mini = 99999
-    maxi = 0
+    mini = float('NaN')
+    maxi = float('NaN')
     total = 0
     count = 0
-    avg = 0
+    avg = float('NaN')
     for i in range(0,len(timeBuckets)):
         numberOfObservationsInBucket = timeBuckets[i][row]
         if numberOfObservationsInBucket > 0:
-            if i < mini:
+            if math.isnan(mini) or i < mini:
                 mini = i
-            if i > maxi:
+            if math.isnan(maxi) or i > maxi:
                 maxi = i
             total = total + i * numberOfObservationsInBucket
             count = count + numberOfObservationsInBucket
@@ -89,11 +90,20 @@ for row in range(0,len(timeBuckets[0])):
     rowTimeStatistics[row]= (mini,maxi,avg)
     rowTempStatistics[row]= (groundTrueTemp(maxi),groundTrueTemp(mini),groundTrueTemp(avg))
     
-index_t =  math.floor((37/maxTemp)*number_of_buckets_temp)  
+index_t =  math.floor((62/maxTemp)*number_of_buckets_temp)  
 print("stats for 37 degrees: %s", rowTimeStatistics[index_t])
 print("stats for 37 degrees: %s", rowTempStatistics[index_t])
 
-
+with open('mapping.csv',mode='w') as csv_file:
+    writer = csv.writer(csv_file)
+    headers=("bucket_start_temp", "bucket_end_temp","minimum", "maximum", "average")
+    writer.writerow(headers)
+    for i in range(0,len(rowTempStatistics)):
+        temp = (i/number_of_buckets_temp)*maxTemp
+        etemp = ((i+1)/number_of_buckets_temp)*maxTemp
+        content = (temp,etemp) + rowTempStatistics[i]
+        writer.writerow(content)
+    
 
 H = np.array(timeBuckets).T
 
