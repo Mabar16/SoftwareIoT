@@ -1,0 +1,30 @@
+@prefix attributes: <http://tempsensor.org/attributes#> .
+@prefix n: <http://tempsensor.org/schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix relations: <http://tempsensor.org/relations#> .
+@prefix types: <http://tempsensor.org/types#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://tempsensor.org/schema#/device/temperaturesensor> a types:Sensor ;
+    relations:has <http://tempsensor.org/schema#device/temperaturesensor/mappingfuntions/max>,
+        <http://tempsensor.org/schema#device/temperaturesensor/mappingfuntions/mean>,
+        <http://tempsensor.org/schema#device/temperaturesensor/mappingfuntions/min> .
+
+<http://tempsensor.org/schema#device/temperaturesensor/mappingfuntions/max> a types:TemperatureFunction ;
+    attributes:function "x+3" ;
+    attributes:label "max" ;
+    attributes:parameter "1" .
+
+<http://tempsensor.org/schema#device/temperaturesensor/mappingfuntions/mean> a types:TemperatureFunction ;
+    attributes:function "x+1" ;
+    attributes:label "mean" ;
+    attributes:parameter "1" .
+
+<http://tempsensor.org/schema#device/temperaturesensor/mappingfuntions/min> a types:TemperatureFunction ;
+    attributes:function "x+2" ;
+    attributes:label "min" ;
+    attributes:parameter "1" .
+
