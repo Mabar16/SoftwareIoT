@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from wrapping import *
+import csv
 
 TTL_FILENAME = '.\\var\\temperatureMapping.ttl'
 
@@ -22,27 +23,35 @@ g.add((device, RELATIONS.has, sensor))
 ################################################################### calibration ####
 
 calibration = N['/device/temperaturesensor/calibration']
+g.add((calibration, RDF.type, TYPES['Configuration']))
+g.add((calibration, ATTRIBUTES.attenuation, Literal('1')))
 g.add((sensor, RELATIONS.has, calibration))
 
 ###############################################################################
 ############################################################# room mapping ####
 
-distribution = {
-    '0': {
-        'min': '37',
-        'max': '37',
-        'avg': '37',
-        'start': '37',
-        'end': '37',
-    },
-    '1': {
-        'min': '38',
-        'max': '38',
-        'avg': '38',
-        'start': '38',
-        'end': '38',
-    },
-}
+
+distribution = {}
+
+mapping_ = {}
+with open('mapping.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            print(f'Column names are {", ".join(row)}')
+            line_count +=1
+        else:
+            print(line_count)
+            mapping_['start'] = row[0]
+            mapping_['end'] = row[1]
+            mapping_['min'] = row[2]
+            mapping_['max'] = row[3]
+            mapping_['avg'] = row[4]
+            print(mapping_['avg'])
+            distribution[mapping_['start']] = mapping_
+            mapping_ = {}
 
 ###############################################################################
 #################################################################### rooms ####
@@ -76,12 +85,15 @@ print("parsed")
 
 q_dashboard = \
 '''
-SELECT DISTINCT ?min ?max ?calibration
+SELECT DISTINCT ?min ?max ?avg ?calibration ?calib  ?attenuation
 WHERE {
-    ?calibration   rdf:type                types:TemperatureDistribution .
-    ?calibration   attributes:label        ?rowNumber .
-    ?calibration   attributes:min          ?min .
-    ?calibration   attributes:max          ?max .
+    ?calibration    rdf:type                types:TemperatureDistribution .
+    ?calibration    attributes:label        ?rowNumber .
+    ?calibration    attributes:min          ?min .
+    ?calibration    attributes:max          ?max .
+    ?calibration    attributes:avg          ?avg.
+    ?calib          rdf:type                types:Configuration .
+    ?calib          attributes:attenuation  ?attenuation . 
         
 }
 '''
