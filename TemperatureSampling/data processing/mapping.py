@@ -62,7 +62,13 @@ with open('log.csv') as csv_file:
 
     print(timeBuckets)
 
-H = np.array(timeBuckets)
-plt.imshow(H)
+H = np.array(timeBuckets).T
+
+H = np.ma.masked_where(H ==0, H)
+
+cmap = plt.cm.get_cmap("viridis")
+cmap.set_bad(color='black')
+
+fig = plt.imshow(H, extent = [0,120,0,60], origin="lower")
 plt.colorbar()
 plt.show()
