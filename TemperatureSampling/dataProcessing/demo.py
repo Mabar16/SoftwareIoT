@@ -10,22 +10,16 @@ print("initial file read")
 ###############################################################################
 ################################################################### calibration ####
 
-device = N['/device']
-g.add((device, RDF.type, TYPES["Device"]))
+device = N['/myFirstDevice']
+g.add((device, RDF.type, N["Device"]))
 
-###############################################################################
-################################################################# device ####
-
-sensor = N['/device/temperaturesensor']
-g.add((device, RELATIONS.has, sensor))
 
 ###############################################################################
 ################################################################### calibration ####
 
-calibration = N['/device/temperaturesensor/calibration']
-g.add((calibration, RDF.type, TYPES['Configuration']))
-g.add((calibration, ATTRIBUTES.attenuation, Literal('1')))
-g.add((sensor, RELATIONS.has, calibration))
+calibration = N['/calibrationOne']
+g.add((calibration, RDF.type, N['Calibration']))
+#g.add((calibration, ATTRIBUTES.attenuation, Literal('1')))
 
 ###############################################################################
 ############################################################# room mapping ####
@@ -43,12 +37,15 @@ with open('mapping.csv') as csv_file:
             print(f'Column names are {", ".join(row)}')
             line_count +=1
         else:
+
             print(line_count)
             mapping_['start'] = row[0]
             mapping_['end'] = row[1]
             mapping_['min'] = row[2]
             mapping_['max'] = row[3]
             mapping_['avg'] = row[4]
+            mapping_['a'] = row[5]
+            mapping_['b'] = row[6]
             print(mapping_['avg'])
             distribution[mapping_['start']] = mapping_
             mapping_ = {}
@@ -59,7 +56,17 @@ with open('mapping.csv') as csv_file:
 distributionMap = {}
 for rownumber in distribution:
     data = distribution[rownumber]
-    mapping = N['/device/temperaturesensor/calibration/mappings/%s' % rownumber]
+
+    function = N['Function'+str(line_count)]
+    g.add((function,RDF.Type,N["LinearFunction"]))
+    g.add((function,N.intervalStart, Literal(data["start"])))
+    g.add((function,N.intervalEnd, Literal(data["end"])))
+    g.add((function,N.minValue, Literal(data["min"])))
+    g.add((function,N.maxValue, Literal(data["max"])))
+    g.add((function,N.avgValue, Literal(data["avg"])))
+    g.add((function,N.aParameterValue, Literal(data["a"])))
+    g.add((function,N.bParameterValue, Literal(data["b"])))
+    #mapping = N['/device/temperaturesensor/calibration/mappings/%s' % rownumber]
     g.add((mapping, RDF.type, TYPES['TemperatureDistribution']))
     g.add((mapping, ATTRIBUTES.label, Literal(rownumber)))
     g.add((mapping, ATTRIBUTES.min, Literal(data["min"])))
