@@ -120,5 +120,4 @@ plt.ylabel('Temperature [°C]')
 cbar = plt.colorbar()
 cbar.ax.get_yaxis().labelpad = 15
 cbar.ax.set_ylabel('Number of oberservations')
-#cbar.set_label('Number of oberservations', rotation=270)
 plt.show()
