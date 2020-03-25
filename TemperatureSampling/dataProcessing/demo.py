@@ -2,7 +2,7 @@
 from wrapping import *
 from string import Template
 
-TTL_FILENAME = '.\\var\\temperatureMapping.ttl'
+TTL_FILENAME = './var/temperatureMapping.ttl'
 
 g = Graph()
 g.parse(TTL_FILENAME, format='turtle')
