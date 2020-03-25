@@ -18,7 +18,7 @@ apin = adc.channel(pin='P16')   # create an analog pin on P16
 while True:
     val = apin()                    # read an analog value
     pycom.rgbled(0x556633)  # Red
-    #print(val)
+    wifi.send(val)
     time.sleep(1)
     #pycom.rgbled(0x005500)  # Green
     #time.sleep(1)
