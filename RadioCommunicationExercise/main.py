@@ -5,12 +5,16 @@ import time
 
 pycom.heartbeat(False)
 
+
+
 p_out = Pin('P19', mode=Pin.OUT)
 p_out.value(1)
 
 
 adc = machine.ADC()             # create an ADC object
 apin = adc.channel(pin='P16')   # create an analog pin on P16
+
+
 
 while True:
     val = apin()                    # read an analog value
