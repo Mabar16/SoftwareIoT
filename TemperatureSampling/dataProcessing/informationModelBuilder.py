@@ -60,7 +60,7 @@ for rownumber in distribution:
     data = distribution[rownumber]
 
     function = N['Function'+str(rownumber)]
-    g.add((function,RDF.Type,N["LinearFunction"]))
+    g.add((function,RDF.type,N["LinearFunction"]))
     g.add((function,N.intervalStart, Literal(data["start"])))
     g.add((function,N.intervalEnd, Literal(data["end"])))
     g.add((function,N.minValue, Literal(data["min"])))

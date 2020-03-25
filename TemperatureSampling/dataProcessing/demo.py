@@ -14,7 +14,7 @@ READING = 35.7 #Degree C
 
 q_dashboard = \
 f'''
-SELECT DISTINCT ?fun ?cal ?min ?avg ?max
+SELECT DISTINCT ?fun ?cal ?min ?avg ?max ?a ?b ?funtype
 WHERE {{
     ?cal rdf:type   n:Calibration .
     ?cal n:hasFunction ?fun .
@@ -23,10 +23,10 @@ WHERE {{
     ?fun n:avgValue ?avg .
     ?fun n:minValue ?min .
     ?fun n:maxValue ?max .
+    ?fun n:aParameterValue ?a . 
+    ?fun n:bParameterValue ?b . 
+    ?fun rdf:type ?funtype .
 }}
 '''
-    # ?fun    n:minValue          ?min .
-    # ?fun     n:maxValue           ?max .
-    # ?fun    n:avgValue      ?avg.
-    # ?calib          rdf:type                n:Calibration .
+
 pprint(query(g, q_dashboard))
