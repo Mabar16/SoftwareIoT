@@ -8,18 +8,18 @@ class WifiHandler:
     
     def connect(self):
         # setup as a station
-        wlan = network.WLAN(mode=network.WLAN.STA)
-        wlan.connect('Network2GHz', auth=(network.WLAN.WPA2, 'kalenderlys'))
-        while not wlan.isconnected():
+        self.wlan = network.WLAN(mode=network.WLAN.STA)
+        self.wlan.connect('Network2GHz', auth=(network.WLAN.WPA2, 'kalenderlys'))
+        while not self.wlan.isconnected():
             time.sleep_ms(50)
-        print(wlan.ifconfig())
+        print(self.wlan.ifconfig())
 
         # (address, port)
         s= socket.socket()
         s.setblocking(True)
      #   s = ssl.wrap_socket(s)
         try:
-            s.connect(('192.168.0.13', 8000))
+            s.connect(('hoodedgull.pythonanywhere.com', 37566))
         except OSError as e:
             if str(e) == '[Errno 119] EINPROGRESS': # For non-Blocking sockets 119 is EINPROGRESS
                 print("In Progress")
@@ -30,7 +30,11 @@ class WifiHandler:
         self.sock = s
 
     def send(self,data):
-        print(data)
+        #print(data)
         bytess = bytes(str(data),"utf8")
         print(bytess)
         self.sock.send(bytess)
+
+    def is_connected(self):
+        return self.wlan.isconnected()
+
