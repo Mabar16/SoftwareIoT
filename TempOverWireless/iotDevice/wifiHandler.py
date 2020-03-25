@@ -26,9 +26,10 @@ class WifiHandler:
             else:
                 raise e
         
-        url= 'http://micropython.org/ks/test.html'
+        #url= 'http://micropython.org/ks/test.html'
+        url = 'https://www.google.com/'
         _, _, host, path = url.split('/', 3)
-        addr = socket.getaddrinfo(host, 80)[0][-1]
+        addr = socket.getaddrinfo(host, 9999)[0][-1]
         s = socket.socket()
         s.connect(addr)
         s.send(bytes('GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n' % (path, host), 'utf8'))
