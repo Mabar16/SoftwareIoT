@@ -30,9 +30,12 @@ with open('logFromServer4.csv', 'r') as file_object:
         #If list length is equal to the final number added to the list, no messages are missing
         print("len: " + str(len(countList)) + " . Last num: " + str(countList[-1]))
 
+#Output: 
+# len: 32146 . Last num: 32145 <- message with count 0 is included here
 # len: 138786 . Last num: 138786
 # len: 12783 . Last num: 12783
 # len: 60456 . Last num: 60456
 # len: 88962 . Last num: 88962
+# Nothing is missing
             
          
