@@ -48,5 +48,5 @@ while True:
         wifi.connect()
     wifi.send(payload)
     count += 1
-    time.sleep(.500)
+    time.sleep(.100)
     
