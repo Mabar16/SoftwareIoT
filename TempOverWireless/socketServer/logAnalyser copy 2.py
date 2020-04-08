@@ -6,7 +6,6 @@ with open('fixed100ms.csv', 'r') as file_object:
     csv_reader = csv.reader(file_object, delimiter=',')
 
     line_count = 0
-    prev_tim = 0
     prev_cunt = 0.0
     totaldiff = 0
     diffCount = 0
@@ -19,15 +18,6 @@ with open('fixed100ms.csv', 'r') as file_object:
             print(f'Column names are {", ".join(row)}')
         elif line_count < 442:
             pass
-        elif prev_tim == 0:
-            if(row[0].isnumeric()):
-                temp = float(row[0])
-                lite = float(row[1])
-                cunt = float(row[2])
-                ptim = float(row[3])
-                ltim = float(row[4])
-                prev_tim = ltim
-                prev_cunt = cunt
         else:
             if(row[0].isnumeric() and len(row) > 4 and row[4].isnumeric()):
                 temp = float(row[0])
@@ -35,9 +25,8 @@ with open('fixed100ms.csv', 'r') as file_object:
                 cunt = float(row[2])
                 ptim = float(row[3])
                 ltim = float(row[4])
-                dif = ltim-prev_tim
-                prev_tim = ltim
-                if cunt == 0:
+                dif = ltim-ptim
+                if cunt == 0 and prev_cunt != 0:
                     print(str(line_count) + " -  avg diff: " + str((totaldiff / diffCount)/1000000000))
                     total_avg += totaldiff / diffCount
                     avg_cunt += 1

@@ -26,7 +26,7 @@ with open('fixed100ms.csv', 'r') as file_object:
                 cunt = float(row[2])
                 ptim = float(row[3])
                 ltim = float(row[4])
-                prev_tim = ltim
+                prev_tim = ptim
                 prev_cunt = cunt
         else:
             if(row[0].isnumeric() and len(row) > 4 and row[4].isnumeric()):
@@ -35,8 +35,8 @@ with open('fixed100ms.csv', 'r') as file_object:
                 cunt = float(row[2])
                 ptim = float(row[3])
                 ltim = float(row[4])
-                dif = ltim-prev_tim
-                prev_tim = ltim
+                dif = ptim-prev_tim
+                prev_tim = ptim
                 if cunt == 0:
                     print(str(line_count) + " -  avg diff: " + str((totaldiff / diffCount)/1000000000))
                     total_avg += totaldiff / diffCount
