@@ -10,24 +10,24 @@ dynamodb = boto3.resource('dynamodb',
     aws_secret_access_key='pNsvtNI5b5OVUQ0VVv1xfKFYWh8YI3SPvIaNbvPc',
 )
 def writeToTempTable(payload, timestamp):
+    table = dynamodb.Table('CleverCupTemperature')
     temp = payload['temperature']#.decode("utf-8")
     device = payload['deviceid']
-    
-    table = dynamodb.Table('CleverCupTemperature')
     table.put_item(
         Item={
             'id': timestamp,
-            'device': device,
-            'temp': temp
+            'deviceid': device,
+            'temperature': str(temp)
+
         }
     )
 
 def writeToLocationTable(payload, timestamp):
+    
     table = dynamodb.Table('CleverCupLocation')
     lat = payload['latitude']#.decode("utf-8")
     long = payload['longitude']#.decode("utf-8")
-    device = payload['deviceid']
-    
+    device = payload['deviceid']    
     table.put_item(
         Item={
             'id': timestamp,
