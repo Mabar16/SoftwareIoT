@@ -5,7 +5,22 @@ import ssl
 import uselect as select
 
 class WifiHandler:
-    
+    #GOOGLE API KEY: AIzaSyAgCopBEwp07Sr6ZrnVAP8vee-Qrr0JiXQ
+
+    def connectoToSocket(self):
+        # (address, port)
+        s= socket.socket()
+        s.setblocking(True)
+     #   s = ssl.wrap_socket(s)
+        try:
+            s.connect(('52.57.73.53', 8000))
+            self.sock = s
+        except OSError as e:
+            if str(e) == '[Errno 119] EINPROGRESS': # For non-Blocking sockets 119 is EINPROGRESS
+                print("In Progress")
+            else:
+                raise e
+
     def connect(self):
         # setup as a station
         self.wlan = network.WLAN(mode=network.WLAN.STA)
@@ -16,20 +31,8 @@ class WifiHandler:
             time.sleep_ms(50)
         print(self.wlan.ifconfig())
 
-        # (address, port)
-        s= socket.socket()
-        s.setblocking(True)
-     #   s = ssl.wrap_socket(s)
-        try:
-            s.connect(('52.57.73.53', 8000))
-        except OSError as e:
-            if str(e) == '[Errno 119] EINPROGRESS': # For non-Blocking sockets 119 is EINPROGRESS
-                print("In Progress")
-            else:
-                raise e
-
         
-        self.sock = s
+      
 
     def send(self,data):
         #print(data)
