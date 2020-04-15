@@ -6,6 +6,7 @@ from pytrack import Pytrack
 import time
 import wifiHandler as handler
 from umqttsimple import MQTTClient
+import ujson
 
 py = Pytrack()
 acc = LIS2HH12()
@@ -69,10 +70,18 @@ while True:
     else:
         pycom.rgbled(0x555500)#Yellow
     
-    client.publish(topic="clevercup/temperature", msg=str(readTemp()))
-    valid, location = geo_locate.get_location()
-    if(valid):
-        message = geo_locate.get_location_string()
-        if not "error" in message:
-            client.publish(topic="clevercup/geolocation", msg=message)
-        time.sleep_ms(500)
+    message = {"deviceid" : "vicPycom",
+        "temperature":readTemp() }
+
+    client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
+   
+    geostring = geo_locate.get_location_string()
+    if not "error" in geostring:
+        geolist = geostring.split(',')
+        message = {"deviceid" : "vicPycom",
+        "latitude": geolist[0],
+        "longitude":geolist[1],
+        "accuracy":geolist[2]}
+        client.publish(topic="clevercup/geolocation", msg=ujson.dumps(message))
+        
+    time.sleep_ms(500)
