@@ -32,7 +32,7 @@ valid, location = geo_locate.get_location()
 if(valid):
 	print("The geo position results: " + geo_locate.get_location_string())
 
-client = MQTTClient("device_id", "192.168.0.16",user="your_username", password="your_api_key", port=1883)
+client = MQTTClient("device_id", "3.126.242.230",user="your_username", password="your_api_key", port=1883)
 client.connect()
 
 def isWithinTempInterval(tempReading):
@@ -69,5 +69,10 @@ while True:
     else:
         pycom.rgbled(0x555500)#Yellow
     
-    client.publish(topic="test/topic", msg="ON")
-    time.sleep_ms(500)
+    client.publish(topic="clevercup/temperature", msg=str(readTemp()))
+    valid, location = geo_locate.get_location()
+    if(valid):
+        message = geo_locate.get_location_string()
+        if not "error" in message:
+            client.publish(topic="clevercup/geolocation", msg=message)
+        time.sleep_ms(500)
