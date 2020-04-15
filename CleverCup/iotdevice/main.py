@@ -5,6 +5,7 @@ from LIS2HH12 import LIS2HH12
 from pytrack import Pytrack
 import time
 import wifiHandler as handler
+from umqttsimple import MQTTClient
 
 py = Pytrack()
 acc = LIS2HH12()
@@ -30,6 +31,9 @@ geo_locate = geolocate(google_api_key, ssid_)	#geo_locate object
 valid, location = geo_locate.get_location()
 if(valid):
 	print("The geo position results: " + geo_locate.get_location_string())
+
+client = MQTTClient("device_id", "192.168.0.16",user="your_username", password="your_api_key", port=1883)
+client.connect()
 
 def isWithinTempInterval(tempReading):
     tempMax = 28
@@ -65,5 +69,5 @@ while True:
     else:
         pycom.rgbled(0x555500)#Yellow
     
-    
-    time.sleep_ms(100)
+    client.publish(topic="test/topic", msg="ON")
+    time.sleep_ms(500)
