@@ -2,7 +2,7 @@ import numpy
 import csv
 import matplotlib.pyplot as plt
 
-with open('logFromServer4.csv', 'r') as file_object:
+with open('fixed100ms.csv', 'r') as file_object:
     csv_reader = csv.reader(file_object, delimiter=',')
 
     line_count = 0

@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+TempOverWireless/socketServer/fixed100ms.csv
+
+TempOverWireless/socketServer/log100ms.csv
+
+TempOverWireless/socketServer/logFromServerfixed.csv
