@@ -21,6 +21,7 @@ def writeToTempTable(payload, timestamp):
 
         }
     )
+    print("TMPO")
 
 def writeToLocationTable(payload, timestamp):
     
@@ -37,6 +38,7 @@ def writeToLocationTable(payload, timestamp):
     
         }
     )
+    print("LOCO")
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))

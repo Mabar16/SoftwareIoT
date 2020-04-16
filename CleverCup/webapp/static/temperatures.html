@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="styles.css"> 
+        <script src='http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.js'></script>
+    </head>
+    <body>
+        <div class="topnav">
+            <a  href="index.html">Home</a>
+            <a  href="location.html">Location</a>
+            <a class="active"  href="temperatures.html">Temperatures</a>
+          </div> 
+        <h1>Temps</h1>
+          On this page you can control the range of temperatures that you consider comfortable, and you can view info about temperatures measured in the past
+
+        <h2>Comfort Control</h2>
+        device id:
+          <input type="text" name="deviceID" id="deviceIDinput">
+
+          <button onclick="applyComfortRange($('#deviceIDinput').val(), 60, 80)">Apply coffee preset (60C-80C)</button>
+          <button onclick="applyComfortRange($('#deviceIDinput').val(), 3, 10)">Apply beer/soda preset (3C-10C)</button>
+          <p>Custom range:</p>
+          Minimum:
+          <input type="number" name="newmin" id="newMinInput"/>
+          Maximum:
+          <input type="number" name="newmax" id="newMaxInput"/>
+          <button onclick="applyComfortRange($('#deviceIDinput').val(), $('#newMinInput').val(), $('#newMaxInput').val())")>Apply custom range</button>
+
+        <h2>Temperature information</h2>
+        <i>
+            TODO: Diagrams, stats and stuff
+        </i>
+    </body>
+
+    <script>
+        function applyComfortRange(devid,min, max){
+            console.log(devid+min+"  " +max)
+            $.get( "publishComfortRange", {deviceID:devid, tempMin:min, tempMax:max},function( data ) {
+                   
+                    alert( "Range updated" );
+                    });
+        }
+    </script>
+</html>

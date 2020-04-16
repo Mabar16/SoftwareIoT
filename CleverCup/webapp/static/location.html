@@ -1,0 +1,47 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src='http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.js'></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+  integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+  crossorigin=""/>
+  
+  <!-- Make sure you put this AFTER Leaflet's CSS -->
+  <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+  integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+  crossorigin=""></script>
+  <style>
+  #mapid { height: 400px; width: 400px; }
+  </style>
+  </head>
+
+<body>
+    <div class="topnav">
+        <a href="index.html">Home</a>
+        <a class="active" href="location.html">Location</a>
+        <a href="temperatures.html">Temperatures</a>
+    </div>
+    <h1>Location</h1>
+    <div class="container">
+
+        <div id="mapid"></div>
+    </div>
+
+    
+</body>
+
+<script>
+    $.get("getCupLocation", {deviceID:"vicPycom"}, (data)=>{
+
+        var map = L.map('mapid').setView([data.latitude, data.longitude], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        L.marker([data.latitude, data.longitude]).addTo(map)
+    })
+</script>
+</html>
