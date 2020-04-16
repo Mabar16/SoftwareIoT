@@ -9,7 +9,11 @@ var AWS = require('aws-sdk');
 // Set the region 
 AWS.config.update({region: 'eu-central-1'});
 
-var deviceLocations = []
+var deviceLocations = 
+                    {
+                        'vicPycom':'',
+                        'markusPycom':''
+                    }
 app.use(express.static('static'))
 
 
@@ -37,13 +41,15 @@ client.on("connect", () =>{
     //
 })
 
+client.subscribe("device/vicPycom/location/update")
+
 client.on("message", (topic, message) =>{
-    console.log(topic+ "    " + message)
+   // console.log(topic+ "    " + message)
     if( topic.includes("location/update")){
         payload = JSON.parse(message)
         devicename = topic.split("/")[1]
         location = {lat: payload.latitude, lon: payload.longitude}
-        deviceLocations.push({deviceID: devicename, location:location})
+        deviceLocations[devicename] = location
     }
 })
 
@@ -68,13 +74,7 @@ function publishComfortRange(deviceID, tempMin, tempMax){
 }
 
 function findCup(deviceID){    
-    topic = "device/"+deviceID+"/location/request"
-    msgstring = {"content":"location please."}
-    publish(topic, JSON.stringify(msgstring))     
-
-    isSubscribed = false;
-    if(!deviceLocations.some(i => i.deviceID === deviceID))
-        client.subscribe("device/"+deviceID+"/location/update")
+    return deviceLocations[deviceID]
 }
 
 function placeCupMarker(deviceID, lat, long){
