@@ -86,7 +86,7 @@ class geolocate():
         wlan_nodes = []
         for net in self.nets:
             if net.ssid != self.my_ssid:
-                print("ssid found: " + str(net.ssid) + " " + str(self.prettify(net.bssid)))
+                #print("ssid found: " + str(net.ssid) + " " + str(self.prettify(net.bssid)))
                 wlan_node = {}
                 wlan_node["macAddress"] = str(self.prettify(net.bssid))
                 wlan_node["signalStrength"] = net.rssi
@@ -110,6 +110,6 @@ class geolocate():
 
     def get_location_string(self):
         location_string = None
-        if (self.rjson.get("location") != None):
+        if (self.rjson != None and self.rjson.get("location") != None):
             location_string = str(self.rjson['location']['lat']) + "," + str(self.rjson['location']['lng']) + "," + str(self.rjson['accuracy']) + "\n"
         return location_string

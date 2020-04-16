@@ -134,4 +134,6 @@ TempOverWireless/socketServer/log100ms.csv
 
 TempOverWireless/socketServer/logFromServerfixed.csv
 
+*config.py
+
 CleverCup/webapp/node_modules/
