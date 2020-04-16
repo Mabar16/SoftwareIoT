@@ -42,7 +42,6 @@ geo_locate = geolocate(google_api_key, ssid_)	#geo_locate object
 client = MQTTClient(deviceid, "3.126.242.230",user="your_username", password="your_api_key", port=1883)
 client.connect()
 
-
 def setComfortRange(min, max):
     print('changing comfort range')
     global comfortrange_max
@@ -56,8 +55,10 @@ def handleMQTTMessage(topic, message):
     if "device/"+deviceid+"/comfortrange/updates" == topic:
         setComfortRange(payload['newmin'], payload['newmax'])
 
+
 client.set_callback(handleMQTTMessage)
 client.subscribe("device/"+deviceid+"/comfortrange/updates")
+client.subscribe("device/"+deviceid+"/location/request")
 
 def listenForUpdates():
     while True:
@@ -105,17 +106,17 @@ while True:
         "temperature":temperature }
 
     client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
-   
+
     valid, location = geo_locate.get_location()
-    geostring = geo_locate.get_location_string()
-    if geostring != None and not "error" in geostring:
-        geolist = geostring.split(',')
-        message = {"deviceid" : deviceid,
-        "latitude": geolist[0],
-        "longitude":geolist[1],
-        "accuracy":geolist[2]}
-        client.publish(topic="clevercup/geolocation", msg=ujson.dumps(message))
-    else: 
-        print('error')
+    if(valid):
+        geostring = geo_locate.get_location_string()
+        if geostring != None and not "error" in geostring:
+            geolist = geostring.split(',')
+            message = {
+            "latitude": geolist[0],
+            "longitude":geolist[1],
+            "accuracy":geolist[2]}
+            client.publish(topic="device/"+deviceid+"/location/update", msg=ujson.dumps(message))
+
         
     time.sleep_ms(500)
