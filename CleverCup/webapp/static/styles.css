@@ -25,3 +25,17 @@
     background-color: #4CAF50;
     color: white;
   }
+
+  .ct-series-a .ct-line {
+    /* Set the colour of this series line */
+    stroke: red;
+    /* Control the thikness of your lines */
+    stroke-width: 2px;
+    /* Create a dashed line with a pattern */
+    /* stroke-dasharray: 10px 20px; */
+  }
+
+  .ct-zoom-rect {
+    fill: rgba(200, 100, 100, 0.3);
+    stroke: red;
+  }

@@ -137,3 +137,5 @@ TempOverWireless/socketServer/logFromServerfixed.csv
 *config.py
 
 CleverCup/webapp/node_modules/
+
+CleverCup/webapp/secret.js
