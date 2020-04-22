@@ -18,12 +18,11 @@ db =postgresql.open('pq://'+user+':'+password+'@'+host+':'+str(port)+'/'+dbname+
 def writeToTempTable(payload, timestamp):
     temp = payload['temperature']#.decode("utf-8")
     device = payload['deviceid']
-    timestamp = payload['pycomtime']
+    pycomtime = payload['pycomtime']
 
-    query = "Insert into temperature (\"value\", \"devicename\",\"pycomtime\") values  ("+temp+", '"+device+"', "+timestamp+")"
+    query = "Insert into temperature (\"value\", \"devicename\",\"pycomtime\") values  ("+str(temp)+", '"+device+"', "+str(pycomtime)+")"
     db.execute(query)
 
-    print("TMPO")
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
