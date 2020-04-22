@@ -9,6 +9,17 @@ from umqttsimple import MQTTClient
 import ujson
 import config
 import _thread
+from machine import RTC
+
+
+def unix_time_nanos(dt):
+    # Hardcoded reference point:
+    my_epoch = 1585699200 # 2020-04-01 00:00:00
+    my_epoch_nanos = my_epoch * 1000000000
+    days = dt[2] - 1
+    seconds = days * 24 * 3600  + dt[3] * 3600 + dt[4] * 60 + dt[5]
+    microsecs = seconds * 1000000 + dt[6]
+    return microsecs * 1000 + my_epoch_nanos
 
 comfortrange_max = 10
 comfortrange_min = 0
@@ -29,6 +40,11 @@ pycom.heartbeat(False)
 wifi = handler.WifiHandler()
 wifi.connect()
 
+rtc = RTC()
+rtc.ntp_sync("dk.pool.ntp.org")
+
+# Wait 5 secs for the NTP sync
+time.sleep(5)
 from geoposition import geolocate
 
 ssid_ = "Network2GHz" 							                                #usually defined in your boot.py file
@@ -39,7 +55,7 @@ geo_locate = geolocate(google_api_key, ssid_)	#geo_locate object
 # if(valid):
 # 	print("The geo position results: " + geo_locate.get_location_string())
 
-client = MQTTClient(deviceid, "3.126.242.230",user="your_username", password="your_api_key", port=1883)
+client = MQTTClient(deviceid, "3.127.128.243",user="your_username", password="your_api_key", port=1883)
 client.connect()
 
 def setComfortRange(min, max):
@@ -102,8 +118,10 @@ while True:
     else:
         pycom.rgbled(0x555500)#Yellow
     
+    timestamp = unix_time_nanos(rtc.now())
     message = {"deviceid" : deviceid,
-        "temperature":temperature }
+        "temperature":temperature,
+        "pycomtime":timestamp }
 
     client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
 
