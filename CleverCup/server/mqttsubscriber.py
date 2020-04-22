@@ -12,7 +12,7 @@ user="vibar"
 password=config.dbpassword
 
 
-db =postgresql.open('pq://'+user+':'+password+'@'+host+':'+str(port)'/'+dbname+'')
+db =postgresql.open('pq://'+user+':'+password+'@'+host+':'+str(port)+'/'+dbname+'')
 
 # 
 def writeToTempTable(payload, timestamp):
