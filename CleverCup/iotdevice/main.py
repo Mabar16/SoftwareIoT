@@ -103,10 +103,11 @@ def readTemp():
     volts = (reading/4095) * 1.1
     temp = (volts-0.5) /0.01
     buffer.append(temp)
-    if(len(buffer) > 10):
+    if(len(buffer) > 100):
         buffer = buffer[1:]
     return mean(buffer)
 
+lasttimelocation = 0
 while True:
     pitch = acc.pitch()
     roll = acc.roll()
@@ -125,16 +126,19 @@ while True:
 
     client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
 
-    valid, location = geo_locate.get_location()
-    if(valid):
-        geostring = geo_locate.get_location_string()
-        if geostring != None and not "error" in geostring:
-            geolist = geostring.split(',')
-            message = {
-            "latitude": geolist[0],
-            "longitude":geolist[1],
-            "accuracy":geolist[2]}
-            client.publish(topic="device/"+deviceid+"/location/update", msg=ujson.dumps(message))
+    if(timestamp-lasttimelocation > 30*1000000000):
+        valid, location = geo_locate.get_location()
+        if(valid):
+            geostring = geo_locate.get_location_string()
+            if geostring != None and not "error" in geostring:
+                geolist = geostring.split(',')
+                message = {
+                "latitude": geolist[0],
+                "longitude":geolist[1],
+                "accuracy":geolist[2]}
+                client.publish(topic="device/"+deviceid+"/location/update", msg=ujson.dumps(message))
+        lasttimelocation = unix_time_nanos(rtc.now()) 
+    
 
-        
-    time.sleep_ms(500)
+    
+    time.sleep_ms(10)
