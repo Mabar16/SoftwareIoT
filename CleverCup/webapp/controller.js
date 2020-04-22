@@ -36,7 +36,7 @@ app.get('/getDevices', (req,res) => res.send(Object.keys(deviceLocations)))
 app.get('/getCupLocation', (req, res) => {
 
     location = findCup(req.query.deviceID)
-    console.log(location)
+    console.log(req.query.deviceID + "  " + location)
     res.send(location)
 })
 
@@ -60,7 +60,10 @@ client.on("connect", () => {
     //
 })
 
-client.subscribe("device/vicPycom/location/update")
+Object.keys(deviceLocations).forEach(devicename=>{
+
+    client.subscribe("device/"+devicename+"/location/update")
+})
 
 client.on("message", (topic, message) => {
     // console.log(topic+ "    " + message)
@@ -68,6 +71,7 @@ client.on("message", (topic, message) => {
         payload = JSON.parse(message)
         devicename = topic.split("/")[1]
         location = { lat: payload.latitude, lon: payload.longitude }
+        console.log(devicename + "    " + JSON.stringify(location))
         deviceLocations[devicename] = location
     }
 })
