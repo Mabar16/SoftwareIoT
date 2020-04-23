@@ -59,6 +59,8 @@ if(valid):
 client = MQTTClient(deviceid, config.mqttBrokerIP,user="your_username", password="your_api_key", port=1883)
 client.connect()
 
+running = True
+
 def setComfortRange(min, max):
     with _lock:
         print('changing comfort range')
@@ -79,10 +81,12 @@ client.subscribe("device/"+deviceid+"/comfortrange/updates")
 #client.subscribe("device/"+deviceid+"/location/request") #do we still use this? 
 
 def listenForUpdates():
+    global running
     errorcount = 0
-    while True:
+    while running:
         if errorcount > 5:
             pycom.rgbled(0xFF0000)
+            running = False
             time.sleep(100)
             continue
         
@@ -102,11 +106,13 @@ def listenForUpdates():
 _thread.start_new_thread(listenForUpdates, tuple() )
 
 lastTemp = 0
-def isWithinTempInterval(tempReading):
-    if (tempReading > comfortrange_max or tempReading < comfortrange_min):
-        return False
+def getTemperatureColor(tempReading):
+    if (tempReading > comfortrange_max):
+        return 0xFF5500
+    elif tempReading < comfortrange_min:
+        return 0x000088
     else:
-        return True
+        return 0x008800
 
 def mean(alist):
     total = 0
@@ -130,7 +136,7 @@ def readTemp():
     volts = (reading/4095) * 1.1
     temp = (volts-0.5) /0.01
     buffer.append(temp)
-    if(len(buffer) > buffer_size):
+    if(len(buffer) > config.temperatureBufferLength):
         buffer = buffer[1:]
     return median(buffer)
 
@@ -149,7 +155,7 @@ def makeLocationUpdateMessage():
             print(message) 
 
 def locationUpdates():
-    while True:
+    while running:
         try:
             makeLocationUpdateMessage()
         except:
@@ -162,10 +168,8 @@ def sampleTemperature():
     
     meantemperature = readTemp()
 
-    if isWithinTempInterval(meantemperature):
-        pycom.rgbled(0x005500)#Green
-    else:
-        pycom.rgbled(0x555500)#Yellow
+    pycom.rgbled(getTemperatureColor(meantemperature))
+   
 
     return meantemperature
 
@@ -179,11 +183,11 @@ def sendTemperatureUpdate(temperature):
 
 def temperatureUpdates():
     temperaturesamples = 0
-    while True:
+    while running:
         try:
             temperature = sampleTemperature()
             temperaturesamples += 1
-            if temperaturesamples >= buffer_size/2:
+            if temperaturesamples >= config.temperatureBufferLength/2:
                 sendTemperatureUpdate(temperature)
                 temperaturesamples = 0
         except:
@@ -192,7 +196,7 @@ def temperatureUpdates():
 
 _thread.start_new_thread(temperatureUpdates(), tuple() )
 
-while True:
+while running:
     #pitch = acc.pitch()
     #roll = acc.roll()
     time.sleep(1)
