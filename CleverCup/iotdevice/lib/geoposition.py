@@ -61,11 +61,11 @@ class geolocate():
         return ':'.join('%02x' % (b) for b in mac_binary)
 
     def scan_wlan(self):
-        print(" wlan trying to scan")
+        #print(" wlan trying to scan")
         self.nets = self.wlan_scans.scan()
         self.wlan_timer = time.time()
         self.wlan_number = len(self.nets)
-        print(" wlan scan ready")
+        #print(" wlan scan ready")
 
     def wlan_nodes(self):
         return self.wlan_number

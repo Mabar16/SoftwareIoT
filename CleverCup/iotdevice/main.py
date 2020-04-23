@@ -11,6 +11,7 @@ import config
 import _thread
 from machine import RTC
 
+_lock = _thread.allocate_lock()
 
 def unix_time_nanos(dt):
     # Hardcoded reference point:
@@ -23,7 +24,7 @@ def unix_time_nanos(dt):
 
 comfortrange_max = 10
 comfortrange_min = 0
-deviceid = "vicPycom"
+deviceid = "markusPycom"
 
 py = Pytrack()
 acc = LIS2HH12()
@@ -47,23 +48,24 @@ rtc.ntp_sync("dk.pool.ntp.org")
 time.sleep(5)
 from geoposition import geolocate
 
-ssid_ = "Network2GHz" 							                                #usually defined in your boot.py file
+ssid_ = "be7528-2.4GHz" 							                                #usually defined in your boot.py file
 google_api_key = config.google_api_key					  	#get from google
 geo_locate = geolocate(google_api_key, ssid_)	#geo_locate object
 
-# valid, location = geo_locate.get_location()
-# if(valid):
-# 	print("The geo position results: " + geo_locate.get_location_string())
+valid, location = geo_locate.get_location()
+if(valid):
+	print("The geo position results: " + geo_locate.get_location_string())
 
 client = MQTTClient(deviceid, "3.127.128.243",user="your_username", password="your_api_key", port=1883)
 client.connect()
 
 def setComfortRange(min, max):
-    print('changing comfort range')
-    global comfortrange_max
-    comfortrange_max = int(max)
-    global comfortrange_min
-    comfortrange_min = int(min)
+    with _lock:
+        print('changing comfort range')
+        global comfortrange_max
+        comfortrange_max = int(max)
+        global comfortrange_min
+        comfortrange_min = int(min)
 
 def handleMQTTMessage(topic, message):
     topic = topic.decode("utf8")
@@ -83,7 +85,7 @@ def listenForUpdates():
 
 _thread.start_new_thread(listenForUpdates, tuple() )
 
-
+lastTemp = 0
 def isWithinTempInterval(tempReading):
     if (tempReading > comfortrange_max or tempReading < comfortrange_min):
         return False
@@ -103,42 +105,70 @@ def readTemp():
     volts = (reading/4095) * 1.1
     temp = (volts-0.5) /0.01
     buffer.append(temp)
-    if(len(buffer) > 100):
-        buffer = buffer[1:]
-    return mean(buffer)
+    return buffer
 
 lasttimelocation = 0
-while True:
-    pitch = acc.pitch()
-    roll = acc.roll()
 
-    temperature = readTemp()
-    #print(str(pitch) + " | " + str(roll))
+def makeLocationUpdateMessage():
+    valid, location = geo_locate.get_location()
+    if(valid):
+        geostring = geo_locate.get_location_string()
+        if geostring != None and not "error" in geostring:
+            geolist = geostring.split(',')
+            message = {
+            "latitude": geolist[0],
+            "longitude":geolist[1],
+            "accuracy":geolist[2]}
+            client.publish(topic="device/"+deviceid+"/location/update", msg=ujson.dumps(message))
+            print(message) 
+
+def locationUpdates():
+    while True:
+        try:
+            makeLocationUpdateMessage()
+        except:
+            pass
+        time.sleep(30)
+        
+_thread.start_new_thread(locationUpdates, tuple() )
+
+def makeTempeatureUpdates():
+    global lastTemp
+    temperature = lastTemp
+    readTemp()
+    global buffer
+
     if isWithinTempInterval(temperature):
         pycom.rgbled(0x005500)#Green
     else:
         pycom.rgbled(0x555500)#Yellow
-    
-    timestamp = unix_time_nanos(rtc.now())
-    message = {"deviceid" : deviceid,
-        "temperature":temperature,
-        "pycomtime":timestamp }
 
-    client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
+    if (len(buffer) > 50):
+        temperature = mean(buffer)
+        buffer = []
+        lastTemp = temperature
+        #print(str(pitch) + " | " + str(roll))
+        
+        
+        timestamp = unix_time_nanos(rtc.now())
+        message = {"deviceid" : deviceid,
+            "temperature":temperature,
+            "pycomtime":timestamp }
 
-    if(timestamp-lasttimelocation > 30*1000000000):
-        valid, location = geo_locate.get_location()
-        if(valid):
-            geostring = geo_locate.get_location_string()
-            if geostring != None and not "error" in geostring:
-                geolist = geostring.split(',')
-                message = {
-                "latitude": geolist[0],
-                "longitude":geolist[1],
-                "accuracy":geolist[2]}
-                client.publish(topic="device/"+deviceid+"/location/update", msg=ujson.dumps(message))
-        lasttimelocation = unix_time_nanos(rtc.now()) 
-    
+        client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
+        #print(message)
 
-    
-    time.sleep_ms(10)
+def temperatureUpdates():
+    while True:
+        try:
+            makeTempeatureUpdates()
+        except:
+            pass
+        time.sleep_ms(10)
+
+_thread.start_new_thread(temperatureUpdates(), tuple() )
+
+while True:
+    #pitch = acc.pitch()
+    #roll = acc.roll()
+    time.sleep(1)
