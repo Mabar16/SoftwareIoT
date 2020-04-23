@@ -81,16 +81,21 @@ client.subscribe("device/"+deviceid+"/comfortrange/updates")
 def listenForUpdates():
     errorcount = 0
     while True:
-        if errorcount > 3:
+        if errorcount > 5:
             pycom.rgbled(0xFF0000)
-        else:
-            try:
-                client.check_msg()
-                errorcount = 0
-            except OSError as err:
-                errorcount += 1
-                print("OS error: {0}".format(err))
-            
+            time.sleep(100)
+            continue
+        
+        if errorcount > 3:
+            time.sleep(10)
+
+        try:
+            client.check_msg()
+            errorcount = 0
+        except OSError as e:
+            print(e)
+            errorcount += 1
+        
             
         time.sleep_ms(10)
 
@@ -109,6 +114,15 @@ def mean(alist):
         total += item
     return total / len(alist)
 
+def median(alist):
+    sortedlist = sorted(alist)
+    if(len(sortedlist) % 2 == 0):
+        indexa = len(sortedlist)// 2
+        indexb = len(sortedlist)// 2 +1
+        return (sortedlist[indexa] + sortedlist[indexb])/2
+    else:
+        return sortedlist[len(sortedlist)// 2]
+
 buffer = []
 def readTemp():
     global buffer
@@ -116,9 +130,9 @@ def readTemp():
     volts = (reading/4095) * 1.1
     temp = (volts-0.5) /0.01
     buffer.append(temp)
-    return buffer
-
-lasttimelocation = 0
+    if(len(buffer) > buffer_size):
+        buffer = buffer[1:]
+    return median(buffer)
 
 def makeLocationUpdateMessage():
     valid, location = geo_locate.get_location()
@@ -144,36 +158,34 @@ def locationUpdates():
         
 _thread.start_new_thread(locationUpdates, tuple() )
 
-def makeTempeatureUpdates():
-    global lastTemp
-    temperature = lastTemp
-    readTemp()
-    global buffer
+def sampleTemperature():
+    
+    meantemperature = readTemp()
 
-    if isWithinTempInterval(temperature):
+    if isWithinTempInterval(meantemperature):
         pycom.rgbled(0x005500)#Green
     else:
         pycom.rgbled(0x555500)#Yellow
 
-    if (len(buffer) >= config.temperatureBufferLength):
-        temperature = mean(buffer)
-        buffer = []
-        lastTemp = temperature
-        #print(str(pitch) + " | " + str(roll))
-        
-        
-        timestamp = unix_time_nanos(rtc.now())
-        message = {"deviceid" : deviceid,
-            "temperature":temperature,
-            "pycomtime":timestamp }
+    return meantemperature
 
-        client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
-        #print(message)
+def sendTemperatureUpdate(temperature):
+    timestamp = unix_time_nanos(rtc.now())
+    message = {"deviceid" : deviceid,
+        "temperature":temperature,
+        "pycomtime":timestamp }
+
+    client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
 
 def temperatureUpdates():
+    temperaturesamples = 0
     while True:
         try:
-            makeTempeatureUpdates()
+            temperature = sampleTemperature()
+            temperaturesamples += 1
+            if temperaturesamples >= buffer_size/2:
+                sendTemperatureUpdate(temperature)
+                temperaturesamples = 0
         except:
             pass
         time.sleep_ms(config.temperatureUpdateInterval_ms)
