@@ -16,11 +16,7 @@ const dbclient = new Client({
 })
 dbclient.connect()
 
-var deviceLocations =
-{
-    'vicPycom': '',
-    'markusPycom': ''
-}
+var deviceLocations ={}
 app.use(express.static('static'))
 
 
@@ -31,7 +27,15 @@ app.get('/publishComfortRange', (req, res) => {
     res.send("OK")
 })
 
-app.get('/getDevices', (req,res) => res.send(Object.keys(deviceLocations)))
+app.get('/getDevices', (req,result) =>{
+    dbclient.query('select distinct devicename from temperature', (err, res) => {
+        if(err)
+            console.log(err)
+        names = res.rows.map(r => r.devicename)
+        
+        result.send(names)
+    })
+})
 
 app.get('/getCupLocation', (req, res) => {
 
@@ -60,16 +64,13 @@ client.on("connect", () => {
     //
 })
 
-Object.keys(deviceLocations).forEach(devicename=>{
-
-    client.subscribe("device/"+devicename+"/location/update")
-})
+client.subscribe("clevercup/location")
 
 client.on("message", (topic, message) => {
     // console.log(topic+ "    " + message)
-    if (topic.includes("location/update")) {
+    if (topic === 'clevercup/location') {
         payload = JSON.parse(message)
-        devicename = topic.split("/")[1]
+        devicename = payload["deviceid"]
         location = { lat: payload.latitude, lon: payload.longitude }
         console.log(devicename + "    " + JSON.stringify(location))
         deviceLocations[devicename] = location
@@ -100,6 +101,3 @@ function findCup(deviceID) {
     return deviceLocations[deviceID]
 }
 
-function placeCupMarker(deviceID, lat, long) {
-    L.marker([lat, long]).addTo(mymap).bindPopup("<b>" + deviceID + " is here!</b>.").openPopup();
-}
