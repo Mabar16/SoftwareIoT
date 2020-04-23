@@ -31,7 +31,7 @@
   <input type="number" name="newmin" id="newMinInput" />
   Maximum:
   <input type="number" name="newmax" id="newMaxInput" />
-  <button onclick="applyComfortRange($('#deviceIDinput').val(), $('#newMinInput').val(), $('#newMaxInput').val())"
+  <button onclick="applyComfortRange($('#comfortIdSelect').children('option:selected').val(), $('#newMinInput').val(), $('#newMaxInput').val())"
     )>Apply custom range</button>
 
   <h2>Temperature information</h2>
