@@ -85,10 +85,14 @@ def listenForUpdates():
     errorcount = 0
     while running:
         if errorcount > 5:
-            machine.reset()
+            machine.reset()        
         
-        if errorcount > 3:
+        if errorcount > 2:
+            pycom.rgbled(0xFF0000)
+            print("reconnecing")
+            client.connect()
             time.sleep(10)
+            print("reconnec?")
 
         try:
             client.check_msg()
@@ -177,7 +181,7 @@ def sendTemperatureUpdate(temperature):
         "pycomtime":timestamp }
 
     client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
-    print(message)
+    #print(message)
 
 def temperatureUpdates():
     temperaturesamples = 0
