@@ -33,7 +33,7 @@ acc = LIS2HH12()
 p_out = Pin('P19', mode=Pin.OUT)
 p_out.value(1)
 adc = machine.ADC()             # create an ADC object
-apin = adc.channel(pin='P16')   # create an analog pin on P16
+apin = adc.channel(pin='P16', attn=adc.ATTN_2_5DB)   # create an analog pin on P16
 
 pycom.heartbeat(False)
 
@@ -101,7 +101,7 @@ def listenForUpdates():
             errorcount += 1
         
             
-        time.sleep_ms(10)
+        time.sleep_ms(100)
 
 _thread.start_new_thread(listenForUpdates, tuple() )
 
@@ -133,7 +133,7 @@ buffer = []
 def readTemp():
     global buffer
     reading = apin()
-    volts = (reading/4095) * 1.1
+    volts = (reading/4095) * 1.4669
     temp = (volts-0.5) /0.01
     buffer.append(temp)
     if(len(buffer) > config.temperatureBufferLength):
@@ -152,7 +152,7 @@ def makeLocationUpdateMessage():
             "accuracy":geolist[2],
             "deviceid": deviceid}
             client.publish(topic="clevercup/location", msg=ujson.dumps(message))
-            print(message) 
+            #print(message) 
 
 def locationUpdates():
     while running:
@@ -180,6 +180,7 @@ def sendTemperatureUpdate(temperature):
         "pycomtime":timestamp }
 
     client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
+    print(message)
 
 def temperatureUpdates():
     temperaturesamples = 0
