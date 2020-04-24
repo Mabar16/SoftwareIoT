@@ -85,10 +85,7 @@ def listenForUpdates():
     errorcount = 0
     while running:
         if errorcount > 5:
-            pycom.rgbled(0xFF0000)
-            running = False
-            time.sleep(100)
-            continue
+            machine.reset()
         
         if errorcount > 3:
             time.sleep(10)
@@ -195,7 +192,7 @@ def temperatureUpdates():
             pass
         time.sleep_ms(config.temperatureUpdateInterval_ms)
 
-_thread.start_new_thread(temperatureUpdates(), tuple() )
+_thread.start_new_thread(temperatureUpdates, tuple() )
 
 while running:
     #pitch = acc.pitch()
