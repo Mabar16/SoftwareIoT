@@ -79,13 +79,16 @@ def handleMQTTMessage(topic, message):
 client.set_callback(handleMQTTMessage)
 client.subscribe("device/"+deviceid+"/comfortrange/updates")
 #client.subscribe("device/"+deviceid+"/location/request") #do we still use this? 
+def reconnectMQTT():
+    client.connect()
+    client.subscribe("device/"+deviceid+"/comfortrange/updates")
 
 def listenForUpdates():
     global running
     errorcount = 0
     while running:
         if errorcount > 5:
-            pycom.rgbled(0xFF0000)
+            pycom.rgbled(0xFF0000)  # Red Error = Receive MQTT Error
             running = False
             machine.reset()
         
@@ -93,7 +96,7 @@ def listenForUpdates():
         if errorcount > 2:
             pycom.rgbled(0xFF0000)
             print("reconnecing")
-            client.connect()
+            reconnectMQTT()
             time.sleep(10)
             print("reconnec?")
 
@@ -102,6 +105,8 @@ def listenForUpdates():
             errorcount = 0
         except OSError as e:
             print(e)
+            if(e == "[Errno 113] ECONNABORTED"):
+                reconnectMQTT()
             errorcount += 1
         
             
@@ -145,18 +150,21 @@ def readTemp():
     return median(buffer)
 
 def makeLocationUpdateMessage():
-    valid, location = geo_locate.get_location()
-    if(valid):
-        geostring = geo_locate.get_location_string()
-        if geostring != None and not "error" in geostring:
-            geolist = geostring.split(',')
-            message = {
-            "latitude": geolist[0],
-            "longitude":geolist[1],
-            "accuracy":geolist[2],
-            "deviceid": deviceid}
-            client.publish(topic="clevercup/location", msg=ujson.dumps(message))
-            #print(message) 
+    try:
+        valid, location = geo_locate.get_location()
+        if(valid):
+            geostring = geo_locate.get_location_string()
+            if geostring != None and not "error" in geostring:
+                geolist = geostring.split(',')
+                message = {
+                "latitude": geolist[0],
+                "longitude":geolist[1],
+                "accuracy":geolist[2],
+                "deviceid": deviceid}
+                client.publish(topic="clevercup/location", msg=ujson.dumps(message))
+                #print(message) 
+    except:
+        pycom.rgbled(0xFF00FF)  # Magenta Error = Location Error
 
 def locationUpdates():
     while running:
@@ -178,13 +186,16 @@ def sampleTemperature():
     return meantemperature
 
 def sendTemperatureUpdate(temperature):
-    timestamp = unix_time_nanos(rtc.now())
-    message = {"deviceid" : deviceid,
-        "temperature":temperature,
-        "pycomtime":timestamp }
+    try:
+        timestamp = unix_time_nanos(rtc.now())
+        message = {"deviceid" : deviceid,
+            "temperature":temperature,
+            "pycomtime":timestamp }
 
-    client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
-    #print(message)
+        client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
+        #print(message)
+    except:
+        pycom.rgbled(0xFFFFFF)  # White Error = Send MQTT Temp Error
 
 def temperatureUpdates():
     temperaturesamples = 0
@@ -205,3 +216,5 @@ while running:
     #pitch = acc.pitch()
     #roll = acc.roll()
     time.sleep(1)
+
+pycom.rgbled(0xa200ff) # Purple Error = Some other error?
