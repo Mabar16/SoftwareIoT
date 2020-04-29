@@ -16,42 +16,63 @@ const dbclient = new Client({
 })
 dbclient.connect()
 
-var deviceLocations ={}
+var deviceLocations = {}
 app.use(express.static('static'))
 
 
-app.get('/', (req, res) => res.send('Hello World!'))
 app.get('/publishComfortRange', (req, res) => {
+    try {
 
-    publishComfortRange(req.query.deviceID, req.query.tempMin, req.query.tempMax)
-    res.send("OK")
+        publishComfortRange(req.query.deviceID, req.query.tempMin, req.query.tempMax)
+        res.send("OK")
+    } catch (error) {
+        console.error(error);
+    }
 })
 
-app.get('/getDevices', (req,result) =>{
-    dbclient.query('select distinct devicename from temperature', (err, res) => {
-        if(err)
-            console.log(err)
-        names = res.rows.map(r => r.devicename)
-        
-        result.send(names)
-    })
+app.get('/getDevices', (req, result) => {
+    try {
+
+        dbclient.query('select distinct devicename from temperature', (err, res) => {
+            try {
+
+
+                if (err)
+                    console.log(err)
+                names = res.rows.map(r => r.devicename)
+
+                result.send(names)
+            } catch (error) {
+                console.error(error);
+            }
+        })
+    } catch (error) {
+        console.error(error);
+    }
 })
 
 app.get('/getCupLocation', (req, res) => {
-
-    location = findCup(req.query.deviceID)
-    console.log(req.query.deviceID + "  " + location)
-    res.send(location)
+    try {
+        location = findCup(req.query.deviceID)
+        console.log(req.query.deviceID + "  " + location)
+        res.send(location)
+    } catch (error) {
+        console.error(error);
+    }
 })
 
-app.get("/getAllTemperatureData", (requst,result)=>{
-    dbclient.query('select * from temperature where "devicename" = \''+requst.query.deviceID+'\' order by pycomtime', (err, res) => {
-        if(err)
-            console.log(err)
-        console.log(res.rowCount)
-        
-        result.send(res)
-    })
+app.get("/getAllTemperatureData", (requst, result) => {
+    try {
+        dbclient.query('select * from temperature where "devicename" = \'' + requst.query.deviceID + '\' order by pycomtime', (err, res) => {
+            if (err)
+                console.log(err)
+            console.log(res.rowCount)
+
+            result.send(res)
+        })
+    } catch (error) {
+        console.error(error);
+    }
 })
 
 
@@ -64,37 +85,75 @@ client.on("connect", () => {
     //
 })
 
+client.on("disconnect", () => {
+    console.error("Disconnected from MQTT Broker")
+    //
+})
+
+client.on("offline", () => {
+    console.error("I dont have internet!!!")
+    //
+})
+
+client.on("close", () => {
+    console.error("Emitted after a disconnection ( why did we disconnec???)")
+    //
+})
+
+client.on("error", () => {
+    console.error("Cannot Connec!!!!")
+    // One of:
+    // ECONNREFUSED
+    // ECONNRESET
+    // EADDRINUSE
+    // ENOTFOUND
+})
+
+
+
 client.subscribe("clevercup/location")
 
 client.on("message", (topic, message) => {
-    // console.log(topic+ "    " + message)
-    if (topic === 'clevercup/location') {
-        payload = JSON.parse(message)
-        devicename = payload["deviceid"]
-        location = { lat: payload.latitude, lon: payload.longitude }
-        console.log(devicename + "    " + JSON.stringify(location))
-        deviceLocations[devicename] = location
+    try {
+        // console.log(topic+ "    " + message)
+        if (topic === 'clevercup/location') {
+            payload = JSON.parse(message)
+            devicename = payload["deviceid"]
+            location = { lat: payload.latitude, lon: payload.longitude }
+            console.log(devicename + "    " + JSON.stringify(location))
+            deviceLocations[devicename] = location
+        }
+    } catch (error) {
+        console.error(error);
     }
 })
 
 function publish(topic, message) {
-    console.log(topic)
-    console.log(message)
-    client.publish(topic, message, console.log)
+    try {
+        console.log(topic)
+        console.log(message)
+        client.publish(topic, message, console.log)
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 function publishComfortRange(deviceID, tempMin, tempMax) {
-    console.log("publishing! " + tempMin + "   " + tempMax)
+    try {
+        console.log("publishing! " + tempMin + "   " + tempMax)
 
-    topic = "device/" + deviceID + "/comfortrange/updates"
-    message =
-    {
-        'device': deviceID,
-        'newmin': parseInt(tempMin, 10),
-        'newmax': parseInt(tempMax, 10)
+        topic = "device/" + deviceID + "/comfortrange/updates"
+        message =
+        {
+            'device': deviceID,
+            'newmin': parseInt(tempMin, 10),
+            'newmax': parseInt(tempMax, 10)
+        }
+        msgstring = JSON.stringify(message)
+        publish(topic, msgstring)
+    } catch (error) {
+        console.error(error);
     }
-    msgstring = JSON.stringify(message)
-    publish(topic, msgstring)
 }
 
 function findCup(deviceID) {
