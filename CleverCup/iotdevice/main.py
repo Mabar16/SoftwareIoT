@@ -10,7 +10,7 @@ import ujson
 import config
 import _thread
 from machine import RTC
-
+import uos as os
 _lock = _thread.allocate_lock()
 
 def unix_time_nanos(dt):
@@ -22,8 +22,16 @@ def unix_time_nanos(dt):
     microsecs = seconds * 1000000 + dt[6]
     return microsecs * 1000 + my_epoch_nanos
 
-comfortrange_max = 10
-comfortrange_min = 0
+
+if '/flash/comfortrange.txt' in os.listdir():
+    with open('/flash/comfortrange.txt', 'r') as datafile:
+        text = datafile.readline()
+        comfortrange_min = text.split(' ')[0]
+        comfortrange_max = text.split(' ')[1]
+else:
+    comfortrange_min = 10
+    comfortrange_max = 30
+
 deviceid = config.deviceid
 
 py = Pytrack()
@@ -69,6 +77,10 @@ def setComfortRange(min, max):
         global comfortrange_min
         comfortrange_min = int(min)
 
+        with open('/flash/comfortrange.txt', 'w') as datafile:            
+            datafile.write(str(min) + ' ' + str(max))
+
+
 def handleMQTTMessage(topic, message):
     topic = topic.decode("utf8")
     payload = ujson.loads(message.decode("utf8"))
@@ -93,11 +105,14 @@ def listenForUpdates():
             machine.reset()
         
         if errorcount > 2:
-            pycom.rgbled(0xFF0000)
-            print("reconnecing")
-            reconnectMQTT()
-            time.sleep(10)
-            print("reconnec?")
+            try:
+                pycom.rgbled(0xFF0000)
+                print("reconnecing")
+                reconnectMQTT()
+                time.sleep(10)
+                print("reconnec?")
+            except:
+                machine.reset()
 
         try:
             client.check_msg()
