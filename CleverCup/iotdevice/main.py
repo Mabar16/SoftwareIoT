@@ -23,14 +23,16 @@ def unix_time_nanos(dt):
     return microsecs * 1000 + my_epoch_nanos
 
 
-if '/flash/comfortrange.txt' in os.listdir():
-    with open('/flash/comfortrange.txt', 'r') as datafile:
+
+if 'comfortrange.txt' in os.listdir():    
+    with open('comfortrange.txt', 'r') as datafile:
         text = datafile.readline()
-        comfortrange_min = text.split(' ')[0]
-        comfortrange_max = text.split(' ')[1]
+        comfortrange_min = int(text.split(' ')[0])
+        comfortrange_max = int(text.split(' ')[1])
 else:
     comfortrange_min = 10
     comfortrange_max = 30
+
 
 deviceid = config.deviceid
 
@@ -77,7 +79,7 @@ def setComfortRange(min, max):
         global comfortrange_min
         comfortrange_min = int(min)
 
-        with open('/flash/comfortrange.txt', 'w') as datafile:            
+        with open('comfortrange.txt', 'w') as datafile:            
             datafile.write(str(min) + ' ' + str(max))
 
 
