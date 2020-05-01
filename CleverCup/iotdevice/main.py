@@ -13,16 +13,10 @@ from machine import RTC
 import uos as os
 _lock = _thread.allocate_lock()
 
-def unix_time_nanos(dt):
-    # Hardcoded reference point:
-    my_epoch = 1585699200 # 2020-04-01 00:00:00
-    my_epoch_nanos = my_epoch * 1000000000
-    days = dt[2] - 1
-    seconds = days * 24 * 3600  + dt[3] * 3600 + dt[4] * 60 + dt[5]
+def unix_time_nanos(dt, seconds):
     microsecs = seconds * 1000000 + dt[6]
-    return microsecs * 1000 + my_epoch_nanos
-
-
+    nanos = microsecs * 1000
+    return nanos
 
 if 'comfortrange.txt' in os.listdir():    
     try:
@@ -207,7 +201,7 @@ def sampleTemperature():
 
 def sendTemperatureUpdate(temperature):
     try:
-        timestamp = unix_time_nanos(rtc.now())
+        timestamp = unix_time_nanos(rtc.now(), time.time())
         message = {"deviceid" : deviceid,
             "temperature":temperature,
             "pycomtime":timestamp }
