@@ -68,14 +68,14 @@ app.get("/getAllTemperatureData", (requst, result) => {
     if (requst.query.fromtime !== undefined) {
         query += ' AND pycomtime > ' + requst.query.fromtime + ' ';
     }
-    if (requst.query.totime !== undefined && requst.query.totime !== null && isNaN(requst.query.totime) && requst.query.totime !== 'NaN' ) {
+    if (requst.query.totime !== undefined && requst.query.totime !== null  && requst.query.totime !== 'NaN' ) {
     
         query += ' AND pycomtime < ' + requst.query.totime + ' ';
     }
 
     query += ' order by pycomtime';
     try {
-    //    console.log(query)
+    //   console.log(query)
         dbclient.query(query, (err, res) => {
             if (err)
                 console.log(err)

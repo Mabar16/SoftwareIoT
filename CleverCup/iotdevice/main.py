@@ -156,7 +156,7 @@ buffer = []
 def readTemp():
     global buffer
     reading = apin()
-    volts = (reading/4095) * 1.4669
+    volts = (reading/4096) * 1.4669
     temp = (volts-0.5) /0.01
     buffer.append(temp)
     if(len(buffer) > config.temperatureBufferLength):
