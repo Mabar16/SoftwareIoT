@@ -25,10 +25,14 @@ def unix_time_nanos(dt):
 
 
 if 'comfortrange.txt' in os.listdir():    
-    with open('comfortrange.txt', 'r') as datafile:
-        text = datafile.readline()
-        comfortrange_min = int(text.split(' ')[0])
-        comfortrange_max = int(text.split(' ')[1])
+    try:
+        with open('comfortrange.txt', 'r') as datafile:
+            text = datafile.readline()
+            comfortrange_min = int(text.split(' ')[0])
+            comfortrange_max = int(text.split(' ')[1])
+    except:
+        comfortrange_min = 10
+        comfortrange_max = 30
 else:
     comfortrange_min = 10
     comfortrange_max = 30
