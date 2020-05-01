@@ -12,6 +12,9 @@
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
         integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
         crossorigin=""></script>
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <style>
         #mapid {
             height: 400px;
@@ -26,14 +29,17 @@
         <a class="active" href="location.html">Location</a>
         <a href="temperatures.html">Temperatures</a>
     </div>
-    <h1>Location</h1>
-    <select id="locDataSelect"></select>
-    <button onclick="getLocation($('#locDataSelect').children('option:selected').val())">Get Location</button>
     <div class="container">
 
-        <div id="mapid"></div>
+        <h1>Location</h1>
+        <select id="locDataSelect"></select>
+        <button onclick="getLocation($('#locDataSelect').children('option:selected').val())">Get Location</button>
+        <div class="container">
+            
+            <div id="mapid"></div>
+        </div>
+        
     </div>
-
 
 </body>
 

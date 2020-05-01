@@ -62,13 +62,27 @@ app.get('/getCupLocation', (req, res) => {
 })
 
 app.get("/getAllTemperatureData", (requst, result) => {
+   // console.log(requst.query)
+
+    let query = 'select * from temperature where "devicename" = \'' + requst.query.deviceID + '\''
+    if (requst.query.fromtime !== undefined) {
+        query += ' AND pycomtime > ' + requst.query.fromtime + ' ';
+    }
+    if (requst.query.totime !== undefined && requst.query.totime !== null && isNaN(requst.query.totime) && requst.query.totime !== 'NaN' ) {
+    
+        query += ' AND pycomtime < ' + requst.query.totime + ' ';
+    }
+
+    query += ' order by pycomtime';
     try {
-        dbclient.query('select * from temperature where "devicename" = \'' + requst.query.deviceID + '\' order by pycomtime', (err, res) => {
+    //    console.log(query)
+        dbclient.query(query, (err, res) => {
             if (err)
                 console.log(err)
             console.log(res.rowCount)
+            // let filteredPoints = douglasPeucker(res.rows, 50)
 
-            result.send(res)
+            result.send(res.rows)
         })
     } catch (error) {
         console.error(error);
@@ -158,5 +172,47 @@ function publishComfortRange(deviceID, tempMin, tempMax) {
 
 function findCup(deviceID) {
     return deviceLocations[deviceID]
+}
+
+
+function perpendicularDistance(point, lineStart, lineEnd) {
+    a = (lineEnd.value - lineStart.value) / (lineEnd.pycomtime - lineStart.pycomtime)
+
+    x = lineEnd.pycomtime
+    y = lineEnd.value
+
+    //y = a*x +b 
+    b = y - a * x
+
+    x0 = point.pycomtime
+    y0 = point.value
+
+    distance = Math.abs(a * x0 + b * y0 + 0) / (Math.sqrt((a * a) + b * b))
+    return distance
+}
+
+function douglasPeucker(listOfPoints, epsilon) {
+    let maxDistance = 0
+    let index = 0
+    let end = listOfPoints.length - 1
+    for (let i = 1; i < end; i++) {
+        let distance = perpendicularDistance(listOfPoints[i], listOfPoints[0], listOfPoints[end])
+        if (distance > maxDistance) {
+            index = i
+            maxDistance = distance
+        }
+
+    }
+
+    results = []
+    if (maxDistance > epsilon) {
+        let recursiveResults1 = douglasPeucker(listOfPoints.slice(0, index + 1), epsilon)
+        let recursiveResults2 = douglasPeucker(listOfPoints.slice(index), epsilon)
+
+        results = recursiveResults1.slice(0, recursiveResults1.length - 1).concat(recursiveResults2)
+    } else {
+        results = [listOfPoints[0], listOfPoints.length - 1]
+    }
+    return results
 }
 
