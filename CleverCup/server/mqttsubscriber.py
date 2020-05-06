@@ -4,6 +4,7 @@ import time
 import json
 import postgresql
 import config
+import logging
 
 host="clevercupdb.ckz9vj0cvxvl.eu-central-1.rds.amazonaws.com"
 port=5432
@@ -11,6 +12,7 @@ dbname="CleverCupDb"
 user="vibar"
 password=config.dbpassword
 
+logging.basicConfig(filename='example.log',level=logging.DEBUG)
 
 db =postgresql.open('pq://'+user+':'+password+'@'+host+':'+str(port)+'/'+dbname+'')
 
@@ -25,15 +27,15 @@ def writeToTempTable(payload, timestamp):
 
 def sanityCheck(payload, timestamp):
     if(payload["pycomtime"] > timestamp):
-        print("TIME ERROR", payload)
+        logging.warning("TIME ERROR"+ json.dumps(payload))
         return False
     if(payload["temperature"] > 100 or payload["temperature"] < -20):
-        print("TEMPERATURE ERROR", payload)
+        logging.warning("TEMPERATURE ERROR"+ json.dumps(payload))
         return False
     return True
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    logging.warning("Connected with result code "+str(rc))
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
