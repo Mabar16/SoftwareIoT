@@ -23,7 +23,14 @@ def writeToTempTable(payload, timestamp):
     query = "Insert into temperature (\"value\", \"devicename\",\"pycomtime\") values  ("+str(temp)+", '"+device+"', "+str(pycomtime)+")"
     db.execute(query)
 
-
+def sanityCheck(payload, timestamp):
+    if(payload["pycomtime"] > timestamp):
+        print("TIME ERROR", payload)
+        return False
+    if(payload["temperature"] > 100 or payload["temperature"] < -20):
+        print("TEMPERATURE ERROR", payload)
+        return False
+    return True
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
@@ -42,7 +49,8 @@ def on_message(client, userdata, msg):
     timestamp = time.time_ns()
     if ('temperature' in msg.topic):
         payloadDict = decodeJson(msg.payload)
-        writeToTempTable(payloadDict, timestamp)
+        if(sanityCheck(payloadDict, timestamp)):
+            writeToTempTable(payloadDict, timestamp)
 
 
 client = mqtt.Client()
