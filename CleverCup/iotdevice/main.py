@@ -52,8 +52,16 @@ wifi.connect()
 rtc = RTC()
 rtc.ntp_sync("dk.pool.ntp.org")
 
-# Wait 5 secs for the NTP sync
-time.sleep(5)
+rtcerrorcount = 0
+# Wait for the NTP sync
+while( not rtc.synced()):
+    time.sleep(1)
+    rtcerrorcount += 1
+    if(rtcerrorcount > 60):
+        pycom.rgbled(0xFF0000)
+        running = False
+        break
+
 from geoposition import geolocate
 
 ssid_ = config.wifi_ssid 						 #usually defined in your boot.py file
