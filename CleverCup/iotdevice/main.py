@@ -183,7 +183,7 @@ def makeLocationUpdateMessage():
                 "longitude":geolist[1],
                 "accuracy":geolist[2],
                 "deviceid": deviceid}
-                client.publish(topic="clevercup/location", msg=ujson.dumps(message))
+                client.publish(topic="clevercup/location", msg=ujson.dumps(message), retain=True)
                 #print(message) 
     except:
         pycom.rgbled(0xFF00FF)  # Magenta Error = Location Error
