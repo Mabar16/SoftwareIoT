@@ -129,7 +129,7 @@
   }
 
   function updateTemperatureData(deviceID) {
-    let fromDate = $("#datetimepickerfrom").data("DateTimePicker").date().toDate();
+    let fromDate = $("#datetimepickerfrom").data("DateTimePicker").date()?.toDate() ?? undefined
     // let fromformatted = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
     // console.log(date.getTime())
     let  notNullToDateS = $("#datetimepickerto").data("DateTimePicker").date()?.toDate() ?? undefined
@@ -137,7 +137,7 @@
     // let toformatted = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 
     //$("#datetimepickerto").find("input").val();
-    $.get("getAllTemperatureData", { deviceID: deviceID, fromtime: fromDate.getTime() * 1000000, totime: notNullToDateS?.getTime() * 1000000 }, function (rows) {
+    $.get("getAllTemperatureData", { deviceID: deviceID, fromtime: fromDate?.getTime() * 1000000, totime: notNullToDateS?.getTime() * 1000000 }, function (rows) {
 
       let timevalues = rows.map(row => row.pycomtime)
       let tempvalues = rows.map(row => row.value)
@@ -156,8 +156,8 @@
 
 
       var options = {
-        // width: 1800,
-        height: "800px",
+        // width: 300,
+        // height: 200,
         axisX: {
           type: Chartist.AutoScaleAxis,
           showGrid: false,

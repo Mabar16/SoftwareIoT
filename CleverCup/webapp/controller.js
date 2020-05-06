@@ -61,28 +61,43 @@ app.get('/getCupLocation', (req, res) => {
     }
 })
 
-app.get("/getAllTemperatureData", (requst, result) => {
-   // console.log(requst.query)
+app.get("/getAllTemperatureData", (request, result) => {
+    // console.log(request.query)
 
-    let query = 'select * from temperature where "devicename" = \'' + requst.query.deviceID + '\''
-    if (requst.query.fromtime !== undefined) {
-        query += ' AND pycomtime > ' + requst.query.fromtime + ' ';
+    let query = 'select * from temperature where "devicename" = $1'
+    values = [request.query.deviceID]
+    let hasDollar2 = false;
+    if (request.query.fromtime !== undefined && request.query.fromtime !== null && request.query.fromtime !== 'NaN') {
+        query += ' AND pycomtime > $2';
+        values.push(request.query.fromtime)
+        hasDollar2 = true
     }
-    if (requst.query.totime !== undefined && requst.query.totime !== null  && requst.query.totime !== 'NaN' ) {
-    
-        query += ' AND pycomtime < ' + requst.query.totime + ' ';
+    if (request.query.totime !== undefined && request.query.totime !== null && request.query.totime !== 'NaN') {
+        if (hasDollar2) {
+            query += ' AND pycomtime < $3 ';
+
+        } else {
+            query += ' AND pycomtime < $2 ';
+        }
+        values.push(request.query.totime)
     }
 
     query += ' order by pycomtime';
     try {
-    //   console.log(query)
-        dbclient.query(query, (err, res) => {
-            if (err)
+        //    console.log(query)
+        //    console.log(values)
+        dbclient.query(query, values, (err, res) => {
+            if (err) {
                 console.log(err)
-            console.log(res.rowCount)
-            // let filteredPoints = douglasPeucker(res.rows, 50)
+                result.send("A mishap ocurred")
 
-            result.send(res.rows)
+            } else {
+
+                console.log(res.rowCount)
+                // let filteredPoints = douglasPeucker(res.rows, 50)
+
+                result.send(res.rows)
+            }
         })
     } catch (error) {
         console.error(error);
