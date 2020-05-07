@@ -138,12 +138,13 @@ _thread.start_new_thread(listenForUpdates, tuple() )
 
 lastTemp = 0
 def getTemperatureColor(tempReading):
-    if (tempReading > comfortrange_max):
-        return 0xFF5500
-    elif tempReading < comfortrange_min:
-        return 0x000088
-    else:
-        return 0x008800
+    with _lock:
+        if (tempReading > comfortrange_max):
+            return 0xFF5500
+        elif tempReading < comfortrange_min:
+            return 0x000088
+        else:
+            return 0x008800
 
 def mean(alist):
     total = 0
