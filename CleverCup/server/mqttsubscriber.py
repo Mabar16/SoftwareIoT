@@ -22,10 +22,18 @@ def writeToTempTable(payload, timestamp):
     device = payload['deviceid']
     pycomtime = payload['pycomtime']
     count = payload["count"]
-    
 
-    query = "Insert into temperature (\"value\", \"devicename\",\"pycomtime\", \"count\",\"servertime\") values  ("+str(temp)+", '"+device+"', "+str(pycomtime)+", " + str(count) + ", " + str(timestamp)+")"
-    db.execute(query)
+    try:
+        query = "Insert into temperature (\"value\", \"devicename\",\"pycomtime\", \"count\",\"servertime\") values  ($1,$2,$3,$4,$5)"
+   
+        inserttemp = db.prepare(query)
+     
+        inserttemp(temp, device, pycomtime, count, timestamp)
+     
+    except e:
+        logging.error(e)
+     
+
 
 def sanityCheck(payload, timestamp):
     if(payload["pycomtime"] > timestamp):
@@ -51,9 +59,12 @@ def decodeJson(payload):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     timestamp = time.time_ns()
+    
     if ('temperature' in msg.topic):
         payloadDict = decodeJson(msg.payload)
+        
         if(sanityCheck(payloadDict, timestamp)):
+            
             writeToTempTable(payloadDict, timestamp)
 
 
