@@ -31,6 +31,16 @@ else:
     comfortrange_min = 10
     comfortrange_max = 30
 
+if 'messagecount.txt' in os.listdir():    
+    try:
+        with open('messagecount.txt', 'r') as datafile:
+            text = datafile.readline()
+            transmissionCount = int(text)
+    except:
+        transmissionCount = 0
+else:
+    transmissionCount = 0
+
 
 deviceid = config.deviceid
 
@@ -213,9 +223,13 @@ def sendTemperatureUpdate(temperature):
         timestamp = unix_time_nanos(rtc.now(), time.time())
         message = {"deviceid" : deviceid,
             "temperature":temperature,
-            "pycomtime":timestamp }
+            "pycomtime":timestamp,
+            "count":transmissionCount }
 
         client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
+
+        with open('messagecount.txt', 'w') as datafile:            
+            datafile.write(str(transmissionCount))
         #print(message)
     except:
         pycom.rgbled(0xFFFFFF)  # White Error = Send MQTT Temp Error
