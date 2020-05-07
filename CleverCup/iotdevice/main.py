@@ -220,6 +220,7 @@ def sampleTemperature():
 
 def sendTemperatureUpdate(temperature):
     try:
+        global transmissionCount
         timestamp = unix_time_nanos(rtc.now(), time.time())
         message = {"deviceid" : deviceid,
             "temperature":temperature,
@@ -228,6 +229,7 @@ def sendTemperatureUpdate(temperature):
 
         client.publish(topic="clevercup/temperature", msg=ujson.dumps(message))
 
+        transmissionCount+=1
         with open('messagecount.txt', 'w') as datafile:            
             datafile.write(str(transmissionCount))
         #print(message)
