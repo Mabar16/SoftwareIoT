@@ -52,8 +52,16 @@ wifi.connect()
 rtc = RTC()
 rtc.ntp_sync("dk.pool.ntp.org")
 
-# Wait 5 secs for the NTP sync
-time.sleep(5)
+rtcerrorcount = 0
+# Wait for the NTP sync
+while( not rtc.synced()):
+    time.sleep(1)
+    rtcerrorcount += 1
+    if(rtcerrorcount > 60):
+        pycom.rgbled(0xFF0000)
+        running = False
+        break
+
 from geoposition import geolocate
 
 ssid_ = config.wifi_ssid 						 #usually defined in your boot.py file
@@ -130,12 +138,13 @@ _thread.start_new_thread(listenForUpdates, tuple() )
 
 lastTemp = 0
 def getTemperatureColor(tempReading):
-    if (tempReading > comfortrange_max):
-        return 0xFF5500
-    elif tempReading < comfortrange_min:
-        return 0x000088
-    else:
-        return 0x008800
+    with _lock:
+        if (tempReading > comfortrange_max):
+            return 0xFF5500
+        elif tempReading < comfortrange_min:
+            return 0x000088
+        else:
+            return 0x008800
 
 def mean(alist):
     total = 0
@@ -175,7 +184,7 @@ def makeLocationUpdateMessage():
                 "longitude":geolist[1],
                 "accuracy":geolist[2],
                 "deviceid": deviceid}
-                client.publish(topic="clevercup/location", msg=ujson.dumps(message))
+                client.publish(topic="clevercup/location", msg=ujson.dumps(message), retain=True)
                 #print(message) 
     except:
         pycom.rgbled(0xFF00FF)  # Magenta Error = Location Error
