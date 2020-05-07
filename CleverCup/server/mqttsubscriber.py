@@ -21,8 +21,10 @@ def writeToTempTable(payload, timestamp):
     temp = payload['temperature']#.decode("utf-8")
     device = payload['deviceid']
     pycomtime = payload['pycomtime']
+    count = payload["count"]
+    
 
-    query = "Insert into temperature (\"value\", \"devicename\",\"pycomtime\") values  ("+str(temp)+", '"+device+"', "+str(pycomtime)+")"
+    query = "Insert into temperature (\"value\", \"devicename\",\"pycomtime\", \"count\",\"servertime\") values  ("+str(temp)+", '"+device+"', "+str(pycomtime)+", " + str(count) + ", " + str(timestamp)+")"
     db.execute(query)
 
 def sanityCheck(payload, timestamp):
