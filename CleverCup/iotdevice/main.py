@@ -70,7 +70,7 @@ while( not rtc.synced()):
     if(rtcerrorcount > 60):
         pycom.rgbled(0xFF0000)
         running = False
-        break
+        machine.reset()
 
 from geoposition import geolocate
 
