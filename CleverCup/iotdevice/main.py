@@ -74,8 +74,8 @@ while( not rtc.synced()):
 
 from geoposition import geolocate
 
-ssid_ = config.wifi_ssid 						 #usually defined in your boot.py file
-google_api_key = config.google_api_key					  	#get from google
+ssid_ = config.wifi_ssid 						
+google_api_key = config.google_api_key			# from google
 geo_locate = geolocate(google_api_key, ssid_)	#geo_locate object
 
 valid, location = geo_locate.get_location()
@@ -110,6 +110,7 @@ client.set_callback(handleMQTTMessage)
 client.subscribe("device/"+deviceid+"/comfortrange/updates")
 #client.subscribe("device/"+deviceid+"/location/request") #do we still use this? 
 def reconnectMQTT():
+  #  wifi.connect()
     client.connect()
     client.subscribe("device/"+deviceid+"/comfortrange/updates")
 
@@ -164,7 +165,9 @@ def mean(alist):
 
 def median(alist):
     sortedlist = sorted(alist)
-    if(len(sortedlist) % 2 == 0):
+    if (len(alist) ==2):
+        return (sortedlist[0] + sortedlist[1])/2
+    elif(len(sortedlist) % 2 == 0):
         indexa = len(sortedlist)// 2
         indexb = len(sortedlist)// 2 +1
         return (sortedlist[indexa] + sortedlist[indexb])/2
@@ -232,21 +235,43 @@ def sendTemperatureUpdate(temperature):
         transmissionCount+=1
         with open('messagecount.txt', 'w') as datafile:            
             datafile.write(str(transmissionCount))
-        #print(message)
-    except:
+            #print(message)
+    except OSError as e:
+        #   pass
+        print(e)
         pycom.rgbled(0xFFFFFF)  # White Error = Send MQTT Temp Error
+        raise e
 
 def temperatureUpdates():
+    global running
+    errorcount = 0
     temperaturesamples = 0
     while running:
+        if errorcount > 5:
+            pycom.rgbled(0xFF0000)  # Red Error = Receive MQTT Error
+            running = False
+            machine.reset()
+        
+        if errorcount > 2:
+            try:
+                pycom.rgbled(0xFF0000)
+                print("reconnecing")
+                reconnectMQTT()
+                time.sleep(10)
+                print("reconnec?")
+            except:
+                machine.reset()
         try:
             temperature = sampleTemperature()
             temperaturesamples += 1
             if temperaturesamples >= config.temperatureBufferLength/2:
                 sendTemperatureUpdate(temperature)
                 temperaturesamples = 0
-        except:
-            pass
+        except OSError as e:
+         #   pass
+            print(e)
+            errorcount += 1
+            pycom.rgbled(0xFFFFFF)  # White Error = Send MQTT Temp Error
         time.sleep_ms(config.temperatureUpdateInterval_ms)
 
 _thread.start_new_thread(temperatureUpdates, tuple() )
